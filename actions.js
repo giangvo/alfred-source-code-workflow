@@ -104,8 +104,10 @@ ProjectGitAction.prototype.build = function(data, callback) {
     data.action = this.actionName;
 
     var that = this;
-    git.gitInfo(data.path, function(info) {
-        if (info) {
+
+    _gitInfo(
+        data.path,
+        function(info) {
             callback(new Item({
                 uid: that.actionName,
                 title: that.actionName,
@@ -115,10 +117,11 @@ ProjectGitAction.prototype.build = function(data, callback) {
                 valid: true,
                 arg: JSON.stringify(data)
             }));
-        } else {
+        },
+        function() {
             callback(undefined);
         }
-    })
+    );
 }
 
 var OpenInSourceTree = new ProjectGitAction({
@@ -134,11 +137,9 @@ var OpenRepoLink = new ProjectGitAction({
     actionName: 'Open Repo Link',
     shortcut: 'repo',
     executor: function(data) {
-        git.gitInfo(data.path, function(info) {
-            if (info) {
-                exec('open "' + info.link + '"');
-            }
-        })
+        _gitInfo(data.path, function(info) {
+            exec('open "' + info.link + '"');
+        });
     }
 });
 
@@ -150,11 +151,9 @@ var OpenPullRequests = new ProjectGitAction({
     actionName: 'Open Pull Requests',
     shortcut: 'prs',
     executor: function(data) {
-        git.gitInfo(data.path, function(info) {
-            if (info) {
-                exec('open "' + info.prsLink + '"');
-            }
-        })
+        _gitInfo(data.path, function(info) {
+            exec('open "' + info.prsLink + '"');
+        });
     }
 });
 
@@ -166,11 +165,9 @@ var CreatePullRequest = new ProjectGitAction({
     actionName: 'Create Pull Request',
     shortcut: 'cpr',
     executor: function(data) {
-        git.gitInfo(data.path, function(info) {
-            if (info) {
-                exec('open "' + info.createPrLink + '"');
-            }
-        })
+        _gitInfo(data.path, function(info) {
+            exec('open "' + info.createPrLink + '"');
+        });
     }
 });
 
@@ -187,6 +184,18 @@ var OpenConfigFileAction = new Action({
         exec('open config.json');
     }
 });
+
+var _gitInfo = function(path, foundCallback, notFoundCallback) {
+    git.gitInfo(path, function(info) {
+        if (info) {
+            foundCallback(info);
+        } else {
+            if (notFoundCallback) {
+                notFoundCallback()
+            };
+        }
+    }, false, 'stash.atlassian.com');
+}
 
 module.exports = {
     "projectActions": [

@@ -69,7 +69,7 @@ function loadProjects(query) {
         }
 
         var sources = config['sources'];
-        if (sources && sources.length > 0) {
+        if (sources && !_.isEmpty(sources)) {
             hasProjectPathConfig = true;
             _.each(sources, function(path, name) {
                 projects.push({

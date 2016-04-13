@@ -1,9 +1,9 @@
 {
     "source-containers": [
-        
+        "/Users/gvotruong/codes/conf/plugins"
     ],
 
     "sources": {
-        
+        "alfred-workflow-nodejs": "/Users/gvotruong/codes/myproject/nodejs/alfred-workflow-nodejs"
     }
 }
