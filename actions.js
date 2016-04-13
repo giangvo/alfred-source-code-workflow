@@ -1,7 +1,9 @@
 /**
  * Define list of actions for a project (source dir)
  */
+var _ = require('underscore');
 var exec = require('child_process').exec;
+var fs = require('fs');
 var AlfredNode = require('alfred-workflow-nodejs');
 var Item = AlfredNode.Item;
 var utils = AlfredNode.utils;
@@ -25,18 +27,28 @@ var ProjectAction = function(options) {
 
 ProjectAction.prototype = Object.create(Action.prototype);
 
-ProjectAction.prototype.build = function(data, callback) {
-    data.action = this.actionName;
+ProjectAction.prototype.shouldDisplay = function(data) {
+    return true;
+}
 
-    callback(new Item({
-        uid: this.actionName,
-        title: this.actionName,
-        subtitle: this.getSubTitle(data),
-        icon: this.getIcon(),
-        hasSubItems: false,
-        valid: true,
-        arg: JSON.stringify(data)
-    }));
+ProjectAction.prototype.build = function(data, callback) {
+    if (this.shouldDisplay(data)) {
+        var that = this;
+        callback(new Item({
+            uid: this.actionName,
+            title: this.actionName,
+            subtitle: this.getSubTitle(data),
+            icon: this.getIcon(),
+            hasSubItems: false,
+            valid: true,
+            arg: JSON.stringify(_.extend({
+                action: that.actionName
+            }, data))
+        }));
+    } else {
+        callback(undefined);
+    }
+
 };
 
 ProjectAction.prototype.execute = function(arg) {
@@ -81,7 +93,7 @@ var OpenInSublimeAction = new ProjectAction({
     actionName: 'Open in Sublime',
     icon: 'sublime.png',
     executor: function(data) {
-        exec('/usr/local/bin/subl --stay -a "' + data.path + '"');
+        exec('/usr/local/bin/subl --stay "' + data.path + '"');
     }
 });
 
@@ -93,6 +105,9 @@ var OpenInIDEA = new ProjectAction({
     }
 });
 
+OpenInIDEA.shouldDisplay = function(data) {
+    return data.projectType === 'java';
+}
 // start of git actions
 var ProjectGitAction = function(options) {
     ProjectAction.call(this, options);
@@ -101,8 +116,6 @@ var ProjectGitAction = function(options) {
 ProjectGitAction.prototype = Object.create(ProjectAction.prototype);
 
 ProjectGitAction.prototype.build = function(data, callback) {
-    data.action = this.actionName;
-
     var that = this;
 
     _gitInfo(
@@ -115,7 +128,9 @@ ProjectGitAction.prototype.build = function(data, callback) {
                 icon: 'icons/' + info.server + '.png',
                 hasSubItems: false,
                 valid: true,
-                arg: JSON.stringify(data)
+                arg: JSON.stringify(_.extend({
+                    action: that.actionName
+                }, data))
             }));
         },
         function() {
@@ -147,20 +162,6 @@ OpenRepoLink.getSubTitle = function(data, gitInfo) {
     return gitInfo.link;
 }
 
-var OpenPullRequests = new ProjectGitAction({
-    actionName: 'Open Pull Requests',
-    shortcut: 'prs',
-    executor: function(data) {
-        _gitInfo(data.path, function(info) {
-            exec('open "' + info.prsLink + '"');
-        });
-    }
-});
-
-OpenPullRequests.getSubTitle = function(data, gitInfo) {
-    return gitInfo.prsLink;
-}
-
 var CreatePullRequest = new ProjectGitAction({
     actionName: 'Create Pull Request',
     shortcut: 'cpr',
@@ -175,6 +176,20 @@ CreatePullRequest.getSubTitle = function(data, gitInfo) {
     return gitInfo.createPrLink;
 }
 
+var OpenPullRequests = new ProjectGitAction({
+    actionName: 'Open Pull Requests',
+    shortcut: 'prs',
+    executor: function(data) {
+        _gitInfo(data.path, function(info) {
+            exec('open "' + info.prsLink + '"');
+        });
+    }
+});
+
+OpenPullRequests.getSubTitle = function(data, gitInfo) {
+    return gitInfo.prsLink;
+}
+
 // end of git actions
 
 // Open config file action
@@ -186,15 +201,28 @@ var OpenConfigFileAction = new Action({
 });
 
 var _gitInfo = function(path, foundCallback, notFoundCallback) {
-    git.gitInfo(path, function(info) {
-        if (info) {
-            foundCallback(info);
-        } else {
-            if (notFoundCallback) {
-                notFoundCallback()
-            };
+    _getStashServer(function(stashServer) {
+        git.gitInfo(path, function(error, info) {
+            if (error) {
+                if (notFoundCallback) {
+                    notFoundCallback()
+                };
+            } else {
+                foundCallback(info);
+            }
+        }, false, stashServer);
+    });
+}
+
+var _getStashServer = function(callback) {
+    fs.readFile('./config.json', 'utf8', function(err, data) {
+        if (err && err.code == 'ENOENT') {
+            console.log('Error: config file not found');
         }
-    }, false, 'stash.atlassian.com');
+
+        var config = JSON.parse(data);
+        callback(config['stash-server']);
+    });
 }
 
 module.exports = {
@@ -205,8 +233,8 @@ module.exports = {
         OpenInIDEA,
         OpenInSourceTree,
         OpenRepoLink,
-        OpenPullRequests,
-        CreatePullRequest
+        CreatePullRequest,
+        OpenPullRequests
     ],
 
     "OpenConfigFileAction": OpenConfigFileAction

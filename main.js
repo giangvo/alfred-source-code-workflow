@@ -116,7 +116,8 @@ function loadProjects(query) {
                     valid: false,
                     data: {
                         name: name,
-                        path: path
+                        path: path,
+                        projectType: projectType
                     }
                 });
 

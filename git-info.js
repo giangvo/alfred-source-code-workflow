@@ -6,7 +6,7 @@ var utils = require("util");
 var _ = require("underscore");
 
 /**
- * @param callback git info found callback
+ * @param callback function(error, repo){...}
  * @param tryParent try to look for git info in parent folder (usefull when run command in sub folder)
  * Return current repo information
  */
@@ -18,12 +18,15 @@ var gitInfo = function(path, callback, tryParent, stashServer) {
                 // try to look in parent
                 fs.readFile(path + "/../.git/config", "utf8", function(err, data) {
                     if (err && err.code == "ENOENT") {
-                        console.log("Not a git repo!");
+                        callback('not a git repo');
                         return;
                     }
 
                     _gitConfigFoundCallback(stashServer, data, callback, false);
                 });
+            } else {
+                callback('not a git repo');
+                return;
             }
         } else {
             _gitConfigFoundCallback(stashServer, data, callback, true);
@@ -53,10 +56,10 @@ var _gitConfigFoundCallback = function(stashServer, data, callback, isGitRoot) {
                 repo.createPrLink = repo.createPrLink + repo.branch;
             }
 
-            callback(repo);
+            callback('', repo);
         });
     } else {
-        console.log("No repo link found!");
+        callback('error parsing git config');
     }
 }
 
