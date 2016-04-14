@@ -19,6 +19,7 @@
     + Stash
 
 ## Installation
+- Download worfklow in `wf` folder of this repo
 - Import workflow
 - Open workflow folder in terminal and run `npm install` to install node modules
 

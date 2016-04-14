@@ -20,11 +20,13 @@ var OpenConfigFileAction = actions.OpenConfigFileAction;
 (function main() {
     // load projects list
     actionHandler.onAction('loadProjects', function(query) {
+        query = query ? query.trim(): '';
         loadProjects(query);
     });
 
     // load project's actions
     actionHandler.onMenuItemSelected('loadProjects', function(query, selectedTitle, selectedData) {
+        query = query ? query.trim(): '';
         loadProjectActions(query, selectedTitle, selectedData);
     });
 
