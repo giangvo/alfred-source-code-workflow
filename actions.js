@@ -3,12 +3,9 @@
  */
 var _ = require('underscore');
 var exec = require('child_process').exec;
-var fs = require('fs');
 var AlfredNode = require('alfred-workflow-nodejs');
 var Item = AlfredNode.Item;
 var utils = AlfredNode.utils;
-
-var git = require('./git-info.js');
 
 var Action = function(options) {
     this.actionName = options.actionName;
@@ -38,7 +35,7 @@ ProjectAction.prototype.build = function(data, callback) {
             uid: this.actionName,
             title: this.actionName,
             subtitle: this.getSubTitle(data),
-            icon: this.getIcon(),
+            icon: this.getIcon(data),
             hasSubItems: false,
             valid: true,
             arg: JSON.stringify(_.extend({
@@ -115,79 +112,64 @@ var ProjectGitAction = function(options) {
 
 ProjectGitAction.prototype = Object.create(ProjectAction.prototype);
 
-ProjectGitAction.prototype.build = function(data, callback) {
-    var that = this;
+ProjectGitAction.prototype.shouldDisplay = function(data) {
+    return data.gitInfo !== undefined;
+}
 
-    _gitInfo(
-        data.path,
-        function(info) {
-            callback(new Item({
-                uid: that.actionName,
-                title: that.actionName,
-                subtitle: that.getSubTitle(data, info),
-                icon: 'icons/' + info.server + '.png',
-                hasSubItems: false,
-                valid: true,
-                arg: JSON.stringify(_.extend({
-                    action: that.actionName
-                }, data))
-            }));
-        },
-        function() {
-            callback(undefined);
-        }
-    );
+ProjectGitAction.prototype.getIcon = function(data) {
+    return 'icons/' + data.gitInfo.server + '.png';
 }
 
 var OpenInSourceTree = new ProjectGitAction({
     actionName: 'Open in Source Tree',
     shortcut: 'st',
-    icon: 'sourcetree.png',
+    icon: 'icons/sourcetree.png',
     executor: function(data) {
         exec('open -a SourceTree "' + data.path + '"');
     }
 });
 
+OpenInSourceTree.getIcon = function(data) {
+    return this.icon;
+}
+
 var OpenRepoLink = new ProjectGitAction({
     actionName: 'Open Repo Link',
     shortcut: 'repo',
     executor: function(data) {
-        _gitInfo(data.path, function(info) {
-            exec('open "' + info.link + '"');
-        });
+        var info = data.gitInfo;
+        exec('open "' + info.link + '"');
     }
 });
 
-OpenRepoLink.getSubTitle = function(data, gitInfo) {
-    return gitInfo.link;
+OpenRepoLink.getSubTitle = function(data) {
+    return data.gitInfo.link;
 }
 
 var CreatePullRequest = new ProjectGitAction({
     actionName: 'Create Pull Request',
     shortcut: 'cpr',
     executor: function(data) {
-        _gitInfo(data.path, function(info) {
-            exec('open "' + info.createPrLink + '"');
-        });
+        var info = data.gitInfo;
+        exec('open "' + info.createPrLink + '"');
     }
 });
 
-CreatePullRequest.getSubTitle = function(data, gitInfo) {
-    return gitInfo.createPrLink;
+CreatePullRequest.getSubTitle = function(data) {
+    return data.gitInfo.createPrLink;
 }
 
 var OpenPullRequests = new ProjectGitAction({
     actionName: 'Open Pull Requests',
     shortcut: 'prs',
     executor: function(data) {
-        _gitInfo(data.path, function(info) {
-            exec('open "' + info.prsLink + '"');
-        });
+        var info = data.gitInfo;
+        exec('open "' + info.prsLink + '"');
     }
 });
 
-OpenPullRequests.getSubTitle = function(data, gitInfo) {
-    return gitInfo.prsLink;
+OpenPullRequests.getSubTitle = function(data) {
+    return data.gitInfo.prsLink;
 }
 
 // end of git actions
@@ -199,31 +181,6 @@ var OpenConfigFileAction = new Action({
         exec('open config.json');
     }
 });
-
-var _gitInfo = function(path, foundCallback, notFoundCallback) {
-    _getStashServer(function(stashServer) {
-        git.gitInfo(path, function(error, info) {
-            if (error) {
-                if (notFoundCallback) {
-                    notFoundCallback()
-                };
-            } else {
-                foundCallback(info);
-            }
-        }, false, stashServer);
-    });
-}
-
-var _getStashServer = function(callback) {
-    fs.readFile('./config.json', 'utf8', function(err, data) {
-        if (err && err.code == 'ENOENT') {
-            console.log('Error: config file not found');
-        }
-
-        var config = JSON.parse(data);
-        callback(config['stash-server']);
-    });
-}
 
 module.exports = {
     "projectActions": [

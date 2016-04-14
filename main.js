@@ -12,6 +12,8 @@ var Item = AlfredNode.Item;
 var utils = AlfredNode.utils;
 var ICONS = AlfredNode.ICONS;
 
+var git = require('./git-info.js');
+
 var actions = require('./actions.js');
 var OpenConfigFileAction = actions.OpenConfigFileAction;
 
@@ -51,6 +53,7 @@ function loadProjects(query) {
         }
 
         var config = JSON.parse(data);
+
         var sourceFolders = config['source-containers'];
 
         var hasProjectPathConfig = false;
@@ -102,11 +105,13 @@ function loadProjects(query) {
 
         var noOfProjects = filteredProjects.length;
 
+        var stashServer = config['stash-server'];
         _.each(filteredProjects, function(project) {
             var name = project.name;
             var path = project.path;
 
-            _detectProjectType(path, function(projectType) {
+            _detectProjectInfo(path, stashServer, function(info) {
+                var projectType = info.projectType;
                 var item = new Item({
                     uid: path,
                     title: name,
@@ -117,7 +122,8 @@ function loadProjects(query) {
                     data: {
                         name: name,
                         path: path,
-                        projectType: projectType
+                        projectType: projectType,
+                        gitInfo: info.gitInfo
                     }
                 });
 
@@ -129,8 +135,7 @@ function loadProjects(query) {
                     // generate feedbacks
                     workflow.feedback();
                 }
-            })
-
+            });
         });
     });
 }
@@ -179,7 +184,7 @@ function loadProjectActions(query, selectedTitle, selectedData) {
 function executeProjectAction(arg) {
     var data = JSON.parse(arg);
     // handle "OpenConfigFileAction"
-    if(data.action === OpenConfigFileAction.actionName) {
+    if (data.action === OpenConfigFileAction.actionName) {
         OpenConfigFileAction.execute(arg);
         return;
     }
@@ -198,6 +203,18 @@ function _getDirectories(folderPath) {
     });
 }
 
+function _detectProjectInfo(path, stashServer, callback) {
+    var info = {};
+    _detectProjectType(path, function(projectType) {
+        info.projectType = projectType;
+
+        _detectGitInfo(path, stashServer, function(gitInfo) {
+            info.gitInfo = gitInfo;
+            callback(info);
+        })
+    });
+}
+
 function _detectProjectType(path, callback) {
     _isFileExists(path + '/pom.xml', function() {
         callback('java');
@@ -208,6 +225,12 @@ function _detectProjectType(path, callback) {
             callback(undefined);
         });
     });
+}
+
+var _detectGitInfo = function(path, stashServer, callback) {
+    git.gitInfo(path, function(error, info) {
+        callback(info);
+    }, false, stashServer);
 }
 
 function _isFileExists(file, existsCallback, notFoundCallback) {
