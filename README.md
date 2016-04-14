@@ -17,7 +17,7 @@
     + Github
     + Bitbutket
     + Stash
-    
+
 ## Installation
 - Import workflow
 - Open workflow folder in terminal and run `npm install` to install node modules
@@ -26,11 +26,13 @@
 ### Commands
 - `sc`: Search projects
 - `scconfig`: Open config file to set source code folders
+
 ### Configs
 - source-containers: All sub folders (1 level) in container are loaded at project
 - sources: individual project
 - stash-server: Stash server domain. e.g: stash.your-compapy.com
 (Optional, config it if you want to detect stash project)
+
 ### Project actions
 When selecting a project by pressing `tab` or `enter` => a list of project actions will be loaded. List of actions will be different base on project type and git info.
 
