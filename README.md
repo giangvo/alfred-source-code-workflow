@@ -17,6 +17,7 @@
     + Github
     + Bitbutket
     + Stash
+    
 ## Installation
 - Import workflow
 - Open workflow folder in terminal and run `npm install` to install node modules
