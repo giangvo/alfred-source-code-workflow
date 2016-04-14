@@ -39,8 +39,8 @@ When selecting a project by pressing `tab` or `enter` => a list of project actio
 
 ## Troubles shooting:
 - `Open in IDEA` not work: open workflow dir in terminal and run `chmod +7 idea` (set run permission for idea script)
-- `Open in Sublime` not work: Check if "/usr/local/bin/subl" is existed. If not run 
-"ln -s /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl" to create `subl` command
+- `Open in Sublime` not work: Check if "/usr/local/bin/subl" is existed. 
+If not, run `ln -s /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl` to create `subl` command
 
 ## Know issues
 - Error with paths start with `~`
