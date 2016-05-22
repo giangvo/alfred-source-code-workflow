@@ -6,107 +6,105 @@ var utils = require("util");
 var _ = require("underscore");
 
 /**
- * @param callback function(error, repo){...}
- * @param tryParent try to look for git info in parent folder (usefull when run command in sub folder)
- * Return current repo information
+ * path
+ * callback(error, gitInfo)
+ * stashServer
  */
-var gitInfo = function(path, callback, tryParent, stashServer) {
-    fs.readFile(path + "/.git/config", "utf8", function(err, data) {
-        if (err && err.code == "ENOENT") {
-            if (tryParent) {
-                // if cannot find git config folder
-                // try to look in parent
-                fs.readFile(path + "/../.git/config", "utf8", function(err, data) {
-                    if (err && err.code == "ENOENT") {
-                        callback('not a git repo');
-                        return;
-                    }
-
-                    _gitConfigFoundCallback(stashServer, data, callback, false);
-                });
-            } else {
-                callback('not a git repo');
+var gitInfo = function(path, callback, stashServer) {
+    exec('cd ' + path + ' && git config --get remote.origin.url', function(error, stdout, stderr) {
+        if (error || !stdout) {
+            callback('git config: not a git repo');
+            return;
+        }
+        var url = stdout.trim();
+        // get branch
+        gitBranch(function(error, branch) {
+            if (error) {
+                callback(error);
                 return;
             }
-        } else {
-            _gitConfigFoundCallback(stashServer, data, callback, true);
-        }
+
+            // get repo info
+            var info = _parseGitUrl(url, branch, stashServer);
+            if (!info) {
+                callback(error);
+                return;
+            }
+
+            // get git root path
+            gitRootPath(function(error, gitRootPath) {
+                if (error) {
+                    callback(error);
+                    return;
+                }
+                info.gitRootPath = gitRootPath;
+                callback(undefined, info);
+            })
+
+        })
+
     });
 }
 
+/**
+ * callback(error, branch)
+ */
 var gitBranch = function(callback) {
     exec("git rev-parse --abbrev-ref HEAD", function(error, stdout, stderr) {
-        callback(stdout.trim());
+        if (error || !stdout) {
+            callback('gitBranch: not a git repo');
+            return;
+        }
+        callback(undefined, stdout.trim());
+    });
+}
+
+/**
+ * callback(error, branch)
+ */
+var gitRootPath = function(callback) {
+    exec("git rev-parse --show-toplevel", function(error, stdout, stderr) {
+        if (error || !stdout) {
+            callback('gitRootPath: not a git repo');
+            return;
+        }
+        callback(undefined, stdout.trim());
     });
 }
 
 // start of private methods
+var _parseGitUrl = function(url, branch, stashServer) {
+    var gitConfig = _getBitButketInfo(url, branch);
 
-var _gitConfigFoundCallback = function(stashServer, data, callback, isGitRoot) {
+    if (!gitConfig) {
+        gitConfig = _getGithubInfo(url, branch);
 
-    var repo = _parseGitConfig(stashServer, data);
-    if (repo) {
-        repo.isGitRoot = isGitRoot;
-
-        gitBranch(function(branch) {
-            repo.branch = branch;
-
-            // update source branch for create pr link
-            if (repo.server === "stash" || repo.server === "bitbucket") {
-                repo.createPrLink = repo.createPrLink + repo.branch;
-            }
-
-            callback('', repo);
-        });
-    } else {
-        callback('error parsing git config');
-    }
-}
-
-var _parseGitConfig = function(stashServer, data) {
-    var gitConfig;
-
-    var lines = data.split("\n");
-
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (line.indexOf("url") === 1) {
-            gitConfig = _getBitButketInfo(line);
-            if (gitConfig) {
-                break;
-            }
-
-            gitConfig = _getGithubInfo(line);
-            if (gitConfig) {
-                break;
-            }
-
-            if (stashServer) {
-                gitConfig = _getStashInfo(line, stashServer);
-            }
-
-            break;
+        if (!gitConfig && stashServer) {
+            gitConfig = _getStashInfo(url, branch, stashServer);
         }
-    };
+    }
 
     return gitConfig;
 }
 
-var _getBitButketInfo = function(line) {
-    var BITBUCKET_SSH_URL_PATTERN = /url = git@bitbucket\.org:(.*)\/(.*)\.git/
-    var BITBUCKET_HTTP_URL_PATTERN = /url = https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/
+var _getBitButketInfo = function(url, branch) {
+    var BITBUCKET_SSH_URL_PATTERN = /git@bitbucket\.org:(.*)\/(.*)\.git/
+    var BITBUCKET_HTTP_URL_PATTERN = /https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/
+
     var BITBUCKET_REPO_LINK = "https://bitbucket.org/%s/%s"
     var BITBUCKET_REPO_PRS_LINK = "https://bitbucket.org/%s/%s/pull-requests"
-    var BITBUCKET_CREATE_PR_LINK = "https://bitbucket.org/%s/%s/pull-requests/new?source="
+    var BITBUCKET_BRANCH_PR_LINK = "https://bitbucket.org/%s/%s/pull-requests?query=%s"
+    var BITBUCKET_CREATE_PR_LINK = "https://bitbucket.org/%s/%s/pull-requests/new?source=%s"
 
-    var result = line.match(BITBUCKET_SSH_URL_PATTERN);
     var project, repo;
+
+    var result = url.match(BITBUCKET_SSH_URL_PATTERN);
     if (result) {
         project = result[1];
         repo = result[2];
 
     } else {
-        result = line.match(BITBUCKET_HTTP_URL_PATTERN);
+        result = url.match(BITBUCKET_HTTP_URL_PATTERN);
 
         if (result) {
             project = result[2];
@@ -117,52 +115,71 @@ var _getBitButketInfo = function(line) {
     if (project && repo) {
         return {
             server: "bitbucket",
+            repo: repo,
+            project: project,
+            branch: branch,
+            url: url,
+
             link: utils.format(BITBUCKET_REPO_LINK, project, repo),
             prsLink: utils.format(BITBUCKET_REPO_PRS_LINK, project, repo),
-            createPrLink: utils.format(BITBUCKET_CREATE_PR_LINK, project, repo)
+            prLink: utils.format(BITBUCKET_BRANCH_PR_LINK, project, repo, branch),
+            createPrLink: utils.format(BITBUCKET_CREATE_PR_LINK, project, repo, branch)
         }
     }
 }
 
-var _getGithubInfo = function(line) {
-    var GITHUB_HTTP_URL_PATTERN = /url = https:\/\/github\.com\/(.*)\/(.*)\.git/
-    var GITHUB_GIT_URL_PATTERN = /url = git@github\.com:(.*)\/(.*)\.git/
+var _getGithubInfo = function(url, branch) {
+    var GITHUB_HTTP_URL_PATTERN = /https:\/\/github\.com\/(.*)\/(.*)\.git/
+    var GITHUB_GIT_URL_PATTERN = /git@github\.com:(.*)\/(.*)\.git/
+
     var GITHUB_REPO_LINK = "https://github.com/%s/%s"
     var GITHUB_REPO_PRS_LINK = "https://github.com/%s/%s/pulls"
-    var GITHUB_CREATE_PR_LINK = "https://github.com/%s/%s/compare"
-
-    var result = line.match(GITHUB_HTTP_URL_PATTERN);
-    if (!result) {
-        result = line.match(GITHUB_GIT_URL_PATTERN);
-    }
-
-    if (result) {
-        return {
-            server: "github",
-            link: utils.format(GITHUB_REPO_LINK, result[1], result[2]),
-            prsLink: utils.format(GITHUB_REPO_PRS_LINK, result[1], result[2]),
-            createPrLink: utils.format(GITHUB_CREATE_PR_LINK, result[1], result[2])
-        }
-    }
-}
-
-var _getStashInfo = function(line, stashServer) {
-
-    var STASH_SSH_URL_PATTERN = new RegExp("url = ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
-    var STASH_HTTP_URL_PATTERN = new RegExp("url = https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
-    var STASH_REPO_LINK = "https://" + stashServer + "/projects/%s/repos/%s/browse"
-    var STASH_REPO_PRS_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests"
-    var STASH_CREATE_PR_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests?create&sourceBranch="
+    var GITHUB_BRANCH_PR_LINK = "https://github.com/%s/%s/pulls?q="
+    var GITHUB_CREATE_PR_LINK = "https://github.com/%s/%s/compare/%s...master"
 
     var project, repo;
 
-    var result = line.match(STASH_SSH_URL_PATTERN);
+    var result = url.match(GITHUB_HTTP_URL_PATTERN);
+    if (!result) {
+        result = url.match(GITHUB_GIT_URL_PATTERN);
+    }
+
+    if (result) {
+        project = result[1];
+        repo = result[2];
+        return {
+            server: "github",
+            repo: repo,
+            project: project,
+            branch: branch,
+            url: url,
+
+            link: utils.format(GITHUB_REPO_LINK, project, repo),
+            prsLink: utils.format(GITHUB_REPO_PRS_LINK, project, repo),
+            prLink: utils.format(GITHUB_BRANCH_PR_LINK, project, repo),
+            createPrLink: utils.format(GITHUB_CREATE_PR_LINK, project, repo, branch)
+        }
+    }
+}
+
+var _getStashInfo = function(url, branch, stashServer) {
+
+    var STASH_SSH_URL_PATTERN = new RegExp("ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
+    var STASH_HTTP_URL_PATTERN = new RegExp("https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
+
+    var STASH_REPO_LINK = "https://" + stashServer + "/projects/%s/repos/%s/browse"
+    var STASH_REPO_PRS_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests"
+    var STASH_CREATE_PR_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests?create&sourceBranch=%s"
+
+    var project, repo;
+
+    var result = url.match(STASH_SSH_URL_PATTERN);
     if (result) {
         project = result[1];
         repo = result[2];
 
     } else {
-        result = line.match(STASH_HTTP_URL_PATTERN);
+        result = url.match(STASH_HTTP_URL_PATTERN);
 
         if (result) {
             project = result[2];
@@ -173,9 +190,15 @@ var _getStashInfo = function(line, stashServer) {
     if (project && repo) {
         return {
             server: "stash",
+            repo: repo,
+            project: project,
+            branch: branch,
+            url: url,
+
             link: utils.format(STASH_REPO_LINK, project, repo),
             prsLink: utils.format(STASH_REPO_PRS_LINK, project, repo),
-            createPrLink: utils.format(STASH_CREATE_PR_LINK, project, repo)
+            prLink: utils.format(STASH_REPO_PRS_LINK, project, repo),
+            createPrLink: utils.format(STASH_CREATE_PR_LINK, project, repo, branch)
         }
     }
 }

@@ -86,6 +86,16 @@ var OpenInItermAction = new ProjectAction({
     }
 });
 
+var OPEN_IN_ITERM_CURRENT_SESSION_AS = 'tell application "iTerm"\n' + 'activate\n' + 'set myterm to (current terminal)\n' + 'tell myterm\n' + 'tell the current session\n' + 'write text "cd " & quoted form of "%s"\n' + 'end tell\n' + 'end tell\n' + 'end tell\n'
+var OpenInCurrentSessionInItermAction = new ProjectAction({
+    actionName: 'Open in Iterm at current tab',
+    icon: 'iterm.png',
+    executor: function(data) {
+        var script = OPEN_IN_ITERM_CURRENT_SESSION_AS.replace('%s', data.path);
+        utils.applescript.execute(script);
+    }
+});
+
 var OpenInSublimeAction = new ProjectAction({
     actionName: 'Open in Sublime',
     icon: 'sublime.png',
@@ -102,9 +112,6 @@ var OpenInIDEA = new ProjectAction({
     }
 });
 
-OpenInIDEA.shouldDisplay = function(data) {
-    return data.projectType === 'java';
-}
 // start of git actions
 var ProjectGitAction = function(options) {
     ProjectAction.call(this, options);
@@ -186,6 +193,7 @@ module.exports = {
     "projectActions": [
         OpenInFinderAction,
         OpenInItermAction,
+        OpenInCurrentSessionInItermAction,
         OpenInSublimeAction,
         OpenInIDEA,
         OpenInSourceTree,

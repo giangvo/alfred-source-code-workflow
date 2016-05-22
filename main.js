@@ -7,9 +7,10 @@ var AlfredNode = require('alfred-workflow-nodejs');
 var Item = AlfredNode.Item;
 var actionHandler = AlfredNode.actionHandler;
 var workflow = AlfredNode.workflow;
-workflow.setName('example-alfred-workflow-nodejs');
+workflow.setName('alfred-source-code-wf');
 var Item = AlfredNode.Item;
 var utils = AlfredNode.utils;
+var storage = AlfredNode.storage;
 var ICONS = AlfredNode.ICONS;
 
 var git = require('./git-info.js');
@@ -20,13 +21,13 @@ var OpenConfigFileAction = actions.OpenConfigFileAction;
 (function main() {
     // load projects list
     actionHandler.onAction('loadProjects', function(query) {
-        query = query ? query.trim(): '';
+        query = query ? query.trim() : '';
         loadProjects(query);
     });
 
     // load project's actions
     actionHandler.onMenuItemSelected('loadProjects', function(query, selectedTitle, selectedData) {
-        query = query ? query.trim(): '';
+        query = query ? query.trim() : '';
         loadProjectActions(query, selectedTitle, selectedData);
     });
 
@@ -102,7 +103,7 @@ function loadProjects(query) {
         }
 
         var filteredProjects = utils.filter(query, projects, function(item) {
-            return item.name.toLowerCase();
+            return item.name.toLowerCase() + " " + item.name.toLowerCase().replace(/\-/g, ' ');
         });
 
         var noOfProjects = filteredProjects.length;
@@ -206,15 +207,26 @@ function _getDirectories(folderPath) {
 }
 
 function _detectProjectInfo(path, stashServer, callback) {
-    var info = {};
-    _detectProjectType(path, function(projectType) {
-        info.projectType = projectType;
+    // get from cache
+    var projectsInfo = storage.get('projectsInfo');
+    if (projectsInfo && projectsInfo[path]) {
+        callback(projectsInfo[path]);
+    } else {
+        var info = {};
+        _detectProjectType(path, function(projectType) {
+            info.projectType = projectType;
 
-        _detectGitInfo(path, stashServer, function(gitInfo) {
-            info.gitInfo = gitInfo;
-            callback(info);
-        })
-    });
+            _detectGitInfo(path, stashServer, function(gitInfo) {
+                info.gitInfo = gitInfo;
+                if (!projectsInfo) {
+                    projectsInfo = {};
+                }
+                projectsInfo[path] = info;
+                storage.set('projectsInfo', projectsInfo);
+                callback(info);
+            })
+        });
+    }
 }
 
 function _detectProjectType(path, callback) {
@@ -232,7 +244,7 @@ function _detectProjectType(path, callback) {
 var _detectGitInfo = function(path, stashServer, callback) {
     git.gitInfo(path, function(error, info) {
         callback(info);
-    }, false, stashServer);
+    }, stashServer);
 }
 
 function _isFileExists(file, existsCallback, notFoundCallback) {
