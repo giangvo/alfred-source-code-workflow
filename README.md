@@ -19,9 +19,11 @@
     + Stash
 
 ## Installation
-- Download worfklow in `wf` folder of this repo
-- Import workflow
-- Open workflow folder in terminal and run `npm install` to install node modules
+1. Download latest node version > 6.x. (https://nodejs.org/dist/v6.2.2/)
+2. Download worfklow in `wf` folder of this repo
+3. Import workflow
+4. Open workflow folder in terminal and run `npm install` to install node modules
+5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js` and rename it to `config.js`
 
 ## Usage
 ### Commands
@@ -39,7 +41,7 @@ When selecting a project by pressing `tab` or `enter` => a list of project actio
 
 ## Troubles shooting:
 - `Open in IDEA` not work: open workflow dir in terminal and run `chmod +7 idea` (set run permission for idea script)
-- `Open in Sublime` not work: Check if "/usr/local/bin/subl" is existed. 
+- `Open in Sublime` not work: Check if "/usr/local/bin/subl" is existed.
 If not, run `ln -s /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl` to create `subl` command
 
 ## Know issues
