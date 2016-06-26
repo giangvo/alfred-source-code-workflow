@@ -49,7 +49,7 @@ var OpenInIDEA = new ProjectAction({
     actionName: 'Open in IntelliJ IDEA',
     icon: 'idea.png',
     executor: function(data) {
-        exec('./idea "' + data.path + '"');
+        exec('./bin/idea "' + data.path + '"');
     }
 });
 
@@ -57,7 +57,7 @@ var OpenInWebStorm = new ProjectAction({
     actionName: 'Open in WebStorm',
     icon: 'wstorm.icns',
     executor: function(data) {
-        exec(`wstorm ${data.path} `);
+        exec(`./bin/wstorm ${data.path} `);
     }
 });
 

@@ -19,10 +19,11 @@
     + Stash
 
 ## Installation
-- Download worfklow in `wf` folder of this repo
-- Import workflow
-- Open workflow folder in terminal and run `npm install` to install node modules
-- Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js`
+1. Download latest node version > 6.x. (https://nodejs.org/dist/v6.2.2/)
+2. Download worfklow in `wf` folder of this repo
+3. Import workflow
+4. Open workflow folder in terminal and run `npm install` to install node modules
+5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js` and rename it to `config.js`
 
 ## Usage
 ### Commands
