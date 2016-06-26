@@ -1,6 +1,10 @@
 {
     "source-containers": [
-        
+        "/Users/tthanhdang/src",
+        "/Users/tthanhdang/src/_atlassian",
+        "/Users/tthanhdang/src/cloud",
+        "/Users/tthanhdang/src/server",
+        "/Users/tthanhdang/src/_micros"
     ],
 
     "sources": {

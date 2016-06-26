@@ -1,72 +1,13 @@
 /**
  * Define list of actions for a project (source dir)
  */
-var _ = require('underscore');
 var exec = require('child_process').exec;
 var AlfredNode = require('alfred-workflow-nodejs');
-var Item = AlfredNode.Item;
 var utils = AlfredNode.utils;
 
-var Action = function(options) {
-    this.actionName = options.actionName;
-    this.executor = options.executor;
-};
-
-Action.prototype.execute = function(arg) {
-    this.executor(arg);
-};
-
-var ProjectAction = function(options) {
-    Action.call(this, options);
-    this.shortcut = options.shortcut || '';
-    this.icon = options.icon;
-};
-
-ProjectAction.prototype = Object.create(Action.prototype);
-
-ProjectAction.prototype.shouldDisplay = function(data) {
-    return true;
-}
-
-ProjectAction.prototype.build = function(data, callback) {
-    if (this.shouldDisplay(data)) {
-        var that = this;
-        callback(new Item({
-            uid: this.actionName,
-            title: this.actionName,
-            subtitle: this.getSubTitle(data),
-            icon: this.getIcon(data),
-            hasSubItems: false,
-            valid: true,
-            arg: JSON.stringify(_.extend({
-                action: that.actionName
-            }, data))
-        }));
-    } else {
-        callback(undefined);
-    }
-
-};
-
-ProjectAction.prototype.execute = function(arg) {
-    var data = JSON.parse(arg);
-
-    if (data.action === this.actionName) {
-        this.executor(data);
-    }
-};
-
-ProjectAction.prototype.getSubTitle = function(data) {
-    return data.path;
-}
-
-ProjectAction.prototype.getIcon = function() {
-    return 'icons/' + this.icon;
-}
-
-ProjectAction.prototype.filterKey = function() {
-    return this.actionName + (this.shortcut ? ' ' + this.shortcut : '');
-}
+const Action = require('./action');
+const ProjectAction = require('./project-action');
+const ProjectGitAction = require('./project-git-action');
 
 var OpenInFinderAction = new ProjectAction({
     actionName: 'Open in Finder',
@@ -112,20 +53,14 @@ var OpenInIDEA = new ProjectAction({
     }
 });
 
-// start of git actions
-var ProjectGitAction = function(options) {
-    ProjectAction.call(this, options);
-};
+var OpenInWebStorm = new ProjectAction({
+    actionName: 'Open in WebStorm',
+    icon: 'wstorm.icns',
+    executor: function(data) {
+        exec(`wstorm ${data.path} `);
+    }
+});
 
-ProjectGitAction.prototype = Object.create(ProjectAction.prototype);
-
-ProjectGitAction.prototype.shouldDisplay = function(data) {
-    return data.gitInfo !== undefined;
-}
-
-ProjectGitAction.prototype.getIcon = function(data) {
-    return 'icons/' + data.gitInfo.server + '.png';
-}
 
 var OpenInSourceTree = new ProjectGitAction({
     actionName: 'Open in Source Tree',
@@ -196,6 +131,7 @@ module.exports = {
         OpenInCurrentSessionInItermAction,
         OpenInSublimeAction,
         OpenInIDEA,
+        OpenInWebStorm,
         OpenInSourceTree,
         OpenRepoLink,
         CreatePullRequest,
