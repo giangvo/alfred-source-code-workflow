@@ -2,7 +2,7 @@
     "name": "alfred-source-code-wf",
     "main": "main.js",
     "dependencies": {
-        "alfred-workflow-nodejs": "^1.1.1",
+        "alfred-workflow-nodejs": "^2.0.0",
         "underscore": "^1.7.0"
     }
 }
