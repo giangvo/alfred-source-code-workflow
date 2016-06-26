@@ -17,7 +17,16 @@ var OpenInFinderAction = new ProjectAction({
     }
 });
 
-var OPEN_IN_ITERM_AS = 'tell application "iTerm"\n' + 'activate\n' + 'set myterm to (current terminal)\n' + 'tell myterm\n' + 'launch session "Default Session"\n' + 'tell the last session\n' + 'write text "cd " & quoted form of "%s"\n' + 'end tell\n' + 'end tell\n' + 'end tell\n'
+var OPEN_IN_ITERM_AS = 
+    'tell application "iTerm"\n' +
+    'activate\n' +
+    'tell current window\n' +
+    'set newTab to (create tab with default profile)\n' +
+    'tell last session of newTab\n' +
+    'write text "cd " & quoted form of "%s"\n' +
+    'end tell\n' +
+    'end tell\n' +
+    'end tell\n'
 var OpenInItermAction = new ProjectAction({
     actionName: 'Open in Iterm',
     icon: 'iterm.png',
@@ -27,8 +36,39 @@ var OpenInItermAction = new ProjectAction({
     }
 });
 
-var OPEN_IN_ITERM_CURRENT_SESSION_AS = 'tell application "iTerm"\n' + 'activate\n' + 'set myterm to (current terminal)\n' + 'tell myterm\n' + 'tell the current session\n' + 'write text "cd " & quoted form of "%s"\n' + 'end tell\n' + 'end tell\n' + 'end tell\n'
-var OpenInCurrentSessionInItermAction = new ProjectAction({
+var OPEN_IN_ITERM_NEW_SPLIT_PANEL_AS =
+    'tell application "iTerm"\n' +
+    'activate\n' +
+    'tell current window\n' +
+    'tell current session\n' +
+    'set newSession to (split horizontally with default profile)\n' +
+    'tell newSession\n' +
+    'write text "cd " & quoted form of "%s"\n' +
+    'end tell\n' +
+    'end tell\n' +
+    'end tell\n' +
+    'end tell\n';
+
+var OpenInNewItermSplitPanelAction = new ProjectAction({
+    actionName: 'Open in Iterm in new split panel',
+    icon: 'iterm.png',
+    executor: function(data) {
+        var script = OPEN_IN_ITERM_NEW_SPLIT_PANEL_AS.replace('%s', data.path);
+        utils.applescript.execute(script);
+    }
+});
+
+var OPEN_IN_ITERM_CURRENT_SESSION_AS = 
+    'tell application "iTerm"\n' +
+    'activate\n' +
+    'tell current window\n' +
+    'tell current session\n' +
+    'write text "cd " & quoted form of "%s"\n' +
+    'end tell\n' +
+    'end tell\n' +
+    'end tell\n';
+    
+var OpenInItermCurrentSessionAction = new ProjectAction({
     actionName: 'Open in Iterm at current tab',
     icon: 'iterm.png',
     executor: function(data) {
@@ -128,7 +168,8 @@ module.exports = {
     "projectActions": [
         OpenInFinderAction,
         OpenInItermAction,
-        OpenInCurrentSessionInItermAction,
+        OpenInItermCurrentSessionAction,
+        OpenInNewItermSplitPanelAction,
         OpenInSublimeAction,
         OpenInIDEA,
         OpenInWebStorm,

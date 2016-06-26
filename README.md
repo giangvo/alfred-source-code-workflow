@@ -4,6 +4,8 @@
     + Open in Finder
     + Open in Sublime text 2
     + Open in Iterm
+    + Open in Iterm (Current session)
+    + Open in Iterm (New split panel)
     + Open Itellij IDEA
     + Open in SourceTree
     + Open project's repo link
