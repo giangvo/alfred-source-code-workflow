@@ -1,22 +1,18 @@
-var fs = require('fs');
-var path = require('path');
-
+const fs = require('fs');
 var _ = require('underscore');
 
-var AlfredNode = require('alfred-workflow-nodejs');
+const AlfredNode = require('alfred-workflow-nodejs');
 var Item = AlfredNode.Item;
 var actionHandler = AlfredNode.actionHandler;
 var workflow = AlfredNode.workflow;
 workflow.setName('alfred-source-code-wf');
 var Item = AlfredNode.Item;
-var utils = AlfredNode.utils;
-var storage = AlfredNode.storage;
 var ICONS = AlfredNode.ICONS;
-
-var git = require('./git-info.js');
-
 var actions = require('./actions.js');
+const utils = require('./utils');
+
 var OpenConfigFileAction = actions.OpenConfigFileAction;
+
 
 (function main() {
     // load projects list
@@ -63,7 +59,7 @@ function loadProjects(query) {
         if (sourceFolders && sourceFolders.length > 0) {
             hasProjectPathConfig = true;
             _.each(sourceFolders, function(path) {
-                var folders = _getDirectories(path);
+                var folders = utils.getDirectories(path);
 
                 _.each(folders, function(folder) {
                     projects.push({
@@ -102,7 +98,7 @@ function loadProjects(query) {
             return;
         }
 
-        var filteredProjects = utils.filter(query, projects, function(item) {
+        var filteredProjects = AlfredNode.utils.filter(query, projects, function(item) {
             return item.name.toLowerCase() + " " + item.name.toLowerCase().replace(/\-/g, ' ');
         });
 
@@ -113,7 +109,7 @@ function loadProjects(query) {
             var name = project.name;
             var path = project.path;
 
-            _detectProjectInfo(path, stashServer, function(info) {
+            utils.detectProjectInfo(path, stashServer, function(info) {
                 var projectType = info.projectType;
                 var item = new Item({
                     uid: path,
@@ -151,7 +147,7 @@ function loadProjectActions(query, selectedTitle, selectedData) {
 
     query = query ? query.toLowerCase() : '';
 
-    var filteredActions = utils.filter(query, projectActions, function(action) {
+    var filteredActions = AlfredNode.utils.filter(query, projectActions, function(action) {
         return action.filterKey().toLowerCase();
     });
 
@@ -196,63 +192,5 @@ function executeProjectAction(arg) {
     var projectActions = actions.projectActions;
     _.each(projectActions, function(action) {
         action.execute(arg);
-    });
-}
-
-// return all sub folder in path
-function _getDirectories(folderPath) {
-    return fs.readdirSync(folderPath).filter(function(file) {
-        return fs.statSync(path.join(folderPath, file)).isDirectory();
-    });
-}
-
-function _detectProjectInfo(path, stashServer, callback) {
-    // get from cache
-    var projectsInfo = storage.get('projectsInfo');
-    if (projectsInfo && projectsInfo[path]) {
-        callback(projectsInfo[path]);
-    } else {
-        var info = {};
-        _detectProjectType(path, function(projectType) {
-            info.projectType = projectType;
-
-            _detectGitInfo(path, stashServer, function(gitInfo) {
-                info.gitInfo = gitInfo;
-                if (!projectsInfo) {
-                    projectsInfo = {};
-                }
-                projectsInfo[path] = info;
-                storage.set('projectsInfo', projectsInfo);
-                callback(info);
-            })
-        });
-    }
-}
-
-function _detectProjectType(path, callback) {
-    _isFileExists(path + '/pom.xml', function() {
-        callback('java');
-    }, function() {
-        _isFileExists(path + '/package.json', function() {
-            callback('nodejs');
-        }, function() {
-            callback(undefined);
-        });
-    });
-}
-
-var _detectGitInfo = function(path, stashServer, callback) {
-    git.gitInfo(path, function(error, info) {
-        callback(info);
-    }, stashServer);
-}
-
-function _isFileExists(file, existsCallback, notFoundCallback) {
-    fs.readFile(file, 'utf8', function(err, data) {
-        if (err && err.code == 'ENOENT') {
-            notFoundCallback();
-        } else {
-            existsCallback();
-        }
     });
 }
