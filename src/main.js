@@ -115,7 +115,7 @@ function loadProjects(query) {
                     uid: path,
                     title: name,
                     subtitle: path,
-                    icon: projectType ? 'icons/' + projectType + '.png' : '',
+                    icon: 'icons/' + (projectType ? projectType : 'folder') + '.png',
                     hasSubItems: true,
                     valid: false,
                     data: {
