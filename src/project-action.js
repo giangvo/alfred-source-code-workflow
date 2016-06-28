@@ -4,12 +4,14 @@ const Action = require('./action');
 const AlfredNode = require('alfred-workflow-nodejs');
 const Item = AlfredNode.Item;
 
+const DEFAULT_ICON = 'code.png';
+
 class ProjectAction extends Action {
     constructor(options) {
         super(options);
 
         this.shortcut = options.shortcut || '';
-        this.icon = options.icon;
+        this.icon = options.icon || DEFAULT_ICON;
     }
 
     shouldDisplay(data) {
