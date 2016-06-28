@@ -20,33 +20,37 @@ const utils = {
         if (projectsInfo && projectsInfo[path]) {
             callback(projectsInfo[path]);
         } else {
-            var info = {};
-            utils.detectProjectType(path, function(projectType) {
-                info.projectType = projectType;
+            var projectInfo = {
+                projectType: utils.detectProjectType(path)
+            };
 
-                utils.detectGitInfo(path, stashServer, function(gitInfo) {
-                    info.gitInfo = gitInfo;
-                    if (!projectsInfo) {
-                        projectsInfo = {};
-                    }
-                    projectsInfo[path] = info;
-                    storage.set('projectsInfo', projectsInfo);
-                    callback(info);
-                })
+            utils.detectGitInfo(path, stashServer, function(gitInfo) {
+                projectInfo.gitInfo = gitInfo;
+                if (!projectsInfo) {
+                    projectsInfo = {};
+                }
+                projectsInfo[path] = projectInfo;
+                storage.set('projectsInfo', projectsInfo);
+                callback(projectInfo);
             });
         }
     },
 
-    detectProjectType: function(path, callback) {
-        utils.isFileExists(path + '/pom.xml', function() {
-            callback('java');
-        }, function() {
-            utils.isFileExists(path + '/package.json', function() {
-                callback('nodejs');
-            }, function() {
-                callback(undefined);
-            });
-        });
+    /**
+     * Detect project type of a folder
+     * @param  {string} - path path of a folder
+     * @return {string} - project type
+     */
+    detectProjectType: function(path) {
+        if (utils.isFileExists(path + '/pom.xml')) {
+            return 'java';
+        }
+
+        if(utils.isFileExists(path + '/package.json')) {
+            return 'nodejs';
+        }
+
+        return;
     },
 
     detectGitInfo: function(path, stashServer, callback) {
@@ -55,14 +59,20 @@ const utils = {
         }, stashServer);
     },
 
-    isFileExists: function(file, existsCallback, notFoundCallback) {
-        fs.readFile(file, 'utf8', function(err, data) {
-            if (err && err.code == 'ENOENT') {
-                notFoundCallback();
-            } else {
-                existsCallback();
-            }
-        });
+    /**
+     * Check a file is exist or not
+     * @param  {string} filePath - file path
+     * @return {boolean} returns true if file is exist or otherwise returns false
+     */
+    isFileExists: function(filePath) {
+        try {
+            fs.accessSync(filePath);
+            return true;
+        } catch (e) {
+            return false;
+        }
+
+        return false;
     },
 };
 
