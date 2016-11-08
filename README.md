@@ -21,11 +21,19 @@
     + Stash
 
 ## Installation
-1. Download latest node version > 6.x. (https://nodejs.org/dist/v6.2.2/)
-2. Download worfklow in `wf` folder of this repo
-3. Import workflow
-4. Open workflow folder in terminal and run `npm install` to install node modules
-5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js` and rename it to `config.js`
+~~1. Download latest node version > 6.x. (https://nodejs.org/dist/v6.2.2/)~~
+~~2. Download worfklow in `wf` folder of this repo~~ 
+~~3. Import workflow~~
+
+### Clone and prepare
+1. Clone this repo.
+2. Open workflow folder in terminal and run `npm install` to install node modules
+3. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js` and rename it to `config.js`
+
+### Link source code to Alfred workflow folder. (If you find a better way, please suggest us. Thanks)
+1. Open Alfred Preferences --> Workflows tab --> New blank workflow --> Right click to the new created workflow --> Open in Finder.
+2. Copy all files (include generated `node_modules` folder) to the your new created workflow folder. Aternatively, you can create a sympolic link from source code folder to actual workflow folder. 
+
 
 ## Usage
 ### Commands
