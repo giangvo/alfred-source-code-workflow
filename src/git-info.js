@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 var exec = require('child_process').exec;
-var fs = require("fs");
-var utils = require("util");
-var _ = require("underscore");
+var fs = require('fs');
+var utils = require('util');
+var _ = require('lodash');
 
 /**
  * path
@@ -50,7 +50,7 @@ var gitInfo = function(path, callback, stashServer) {
  * callback(error, branch)
  */
 var gitBranch = function(callback) {
-    exec("git rev-parse --abbrev-ref HEAD", function(error, stdout, stderr) {
+    exec('git rev-parse --abbrev-ref HEAD', function(error, stdout, stderr) {
         if (error || !stdout) {
             callback('gitBranch: not a git repo');
             return;
@@ -63,7 +63,7 @@ var gitBranch = function(callback) {
  * callback(error, branch)
  */
 var gitRootPath = function(callback) {
-    exec("git rev-parse --show-toplevel", function(error, stdout, stderr) {
+    exec('git rev-parse --show-toplevel', function(error, stdout, stderr) {
         if (error || !stdout) {
             callback('gitRootPath: not a git repo');
             return;
@@ -91,10 +91,10 @@ var _getBitButketInfo = function(url, branch) {
     var BITBUCKET_SSH_URL_PATTERN = /git@bitbucket\.org:(.*)\/(.*)\.git/
     var BITBUCKET_HTTP_URL_PATTERN = /https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/
 
-    var BITBUCKET_REPO_LINK = "https://bitbucket.org/%s/%s"
-    var BITBUCKET_REPO_PRS_LINK = "https://bitbucket.org/%s/%s/pull-requests"
-    var BITBUCKET_BRANCH_PR_LINK = "https://bitbucket.org/%s/%s/pull-requests?query=%s"
-    var BITBUCKET_CREATE_PR_LINK = "https://bitbucket.org/%s/%s/pull-requests/new?source=%s"
+    var BITBUCKET_REPO_LINK = 'https://bitbucket.org/%s/%s'
+    var BITBUCKET_REPO_PRS_LINK = 'https://bitbucket.org/%s/%s/pull-requests'
+    var BITBUCKET_BRANCH_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests?query=%s'
+    var BITBUCKET_CREATE_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests/new?source=%s'
 
     var project, repo;
 
@@ -114,7 +114,7 @@ var _getBitButketInfo = function(url, branch) {
 
     if (project && repo) {
         return {
-            server: "bitbucket",
+            server: 'bitbucket',
             repo: repo,
             project: project,
             branch: branch,
@@ -132,10 +132,10 @@ var _getGithubInfo = function(url, branch) {
     var GITHUB_HTTP_URL_PATTERN = /https:\/\/github\.com\/(.*)\/(.*)\.git/
     var GITHUB_GIT_URL_PATTERN = /git@github\.com:(.*)\/(.*)\.git/
 
-    var GITHUB_REPO_LINK = "https://github.com/%s/%s"
-    var GITHUB_REPO_PRS_LINK = "https://github.com/%s/%s/pulls"
-    var GITHUB_BRANCH_PR_LINK = "https://github.com/%s/%s/pulls?q="
-    var GITHUB_CREATE_PR_LINK = "https://github.com/%s/%s/compare/%s...master"
+    var GITHUB_REPO_LINK = 'https://github.com/%s/%s'
+    var GITHUB_REPO_PRS_LINK = 'https://github.com/%s/%s/pulls'
+    var GITHUB_BRANCH_PR_LINK = 'https://github.com/%s/%s/pulls?q='
+    var GITHUB_CREATE_PR_LINK = 'https://github.com/%s/%s/compare/%s...master'
 
     var project, repo;
 
@@ -148,7 +148,7 @@ var _getGithubInfo = function(url, branch) {
         project = result[1];
         repo = result[2];
         return {
-            server: "github",
+            server: 'github',
             repo: repo,
             project: project,
             branch: branch,
@@ -167,9 +167,9 @@ var _getStashInfo = function(url, branch, stashServer) {
     var STASH_SSH_URL_PATTERN = new RegExp("ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
     var STASH_HTTP_URL_PATTERN = new RegExp("https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
 
-    var STASH_REPO_LINK = "https://" + stashServer + "/projects/%s/repos/%s/browse"
-    var STASH_REPO_PRS_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests"
-    var STASH_CREATE_PR_LINK = "https://" + stashServer + "/projects/%s/repos/%s/pull-requests?create&sourceBranch=%s"
+    var STASH_REPO_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/browse'
+    var STASH_REPO_PRS_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests'
+    var STASH_CREATE_PR_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests?create&sourceBranch=%s'
 
     var project, repo;
 
@@ -189,7 +189,7 @@ var _getStashInfo = function(url, branch, stashServer) {
 
     if (project && repo) {
         return {
-            server: "stash",
+            server: 'stash',
             repo: repo,
             project: project,
             branch: branch,

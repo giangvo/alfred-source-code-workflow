@@ -1,4 +1,4 @@
-const ProjectAction = require('./project-action');
+const ProjectAction = require('./ProjectAction');
 
 class ProjectGitAction extends ProjectAction {
     constructor(options) {

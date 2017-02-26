@@ -2,3 +2,4 @@ info.plist
 persist
 node_modules
 config.json
+.node-persist

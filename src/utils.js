@@ -1,39 +1,40 @@
 const fs = require('fs');
 const path = require('path');
-
-const AlfredNode = require('alfred-workflow-nodejs');
-const storage = AlfredNode.storage;
+const { storage } = require('alfred-workflow-nodejs-next');
 
 const git = require('./git-info.js');
-
+const config = require('../config.json');
+const sourceFolders = config['source-folders'];
+const sources = config['sources'];
+const stashServer = config['stash-server'];
 
 const utils = {
     getDirectories: function(folderPath) {
-        return fs.readdirSync(folderPath).filter(function(file) {
-            return fs.statSync(path.join(folderPath, file)).isDirectory();
-        });
+        const folder = fs.readdirSync(folderPath)
+        return folder.filter((file) => fs.statSync(path.join(folderPath, file)).isDirectory());
     },
 
-    detectProjectInfo: function(path, stashServer, callback) {
-        // get from cache
-        var projectsInfo = storage.get('projectsInfo');
-        if (projectsInfo && projectsInfo[path]) {
-            callback(projectsInfo[path]);
-        } else {
-            var projectInfo = {
-                projectType: utils.detectProjectType(path)
-            };
+    detectProjectInfo: function(path, callback) {
+        const keyCache = 'projectsInfo';
 
-            utils.detectGitInfo(path, stashServer, function(gitInfo) {
-                projectInfo.gitInfo = gitInfo;
-                if (!projectsInfo) {
-                    projectsInfo = {};
-                }
-                projectsInfo[path] = projectInfo;
-                storage.set('projectsInfo', projectsInfo);
-                callback(projectInfo);
-            });
+        // get from cache
+        let projectsInfo = storage.get(keyCache) || {};
+        if (projectsInfo[path]) {
+            callback(projectsInfo[path]);
+            return;
         }
+
+        const projectInfo = {
+            projectType: utils.detectProjectType(path)
+        };
+
+        utils.detectGitInfo(path, function(gitInfo) {
+            projectInfo.gitInfo = gitInfo;
+            projectsInfo[path] = projectInfo;
+
+            storage.set(keyCache, projectsInfo);
+            callback(projectInfo);
+        });
     },
 
     /**
@@ -53,8 +54,13 @@ const utils = {
         return;
     },
 
-    detectGitInfo: function(path, stashServer, callback) {
+    detectGitInfo: function(path, callback) {
         git.gitInfo(path, function(error, info) {
+            if (error) {
+                console.warn('Can not detect git info', error, path);
+                return;
+            }
+
             callback(info);
         }, stashServer);
     },
