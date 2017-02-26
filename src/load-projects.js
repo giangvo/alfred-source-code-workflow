@@ -60,6 +60,7 @@ class LoadProjects {
                     arg: JSON.stringify({
                         name,
                         path,
+                        link: gitInfo,
                         projectType,
                         gitInfo
                     })

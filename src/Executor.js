@@ -8,8 +8,8 @@ class Executor {
     execute(arg) {
         arg = (typeof arg === 'string') ? JSON.parse(arg) : arg;
 
-        if (this.name === arg.actionName ||
-            this.key === arg.actionKey) {
+        if ((this.name !== undefined && this.name === arg.actionName) ||
+            (this.key !== undefined && this.key === arg.actionKey)) {
             this.executor(arg);
         }
     };
