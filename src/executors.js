@@ -111,23 +111,22 @@ const openInSourceTree = new ProjectGitAction({
     executor: (data) => {
         const command = `open -a SourceTree ${data.path}`;
         return exec(command);
+    },
+    getIcon: (data) => {
+        return this.icon;
     }
 });
 
-openInSourceTree.getIcon = function(data) {
-    return this.icon;
-}
-
-const OpenRepoLink = new ProjectGitAction({
+const openRepoLink = new ProjectGitAction({
+    key: 'open_repo_link',
     name: 'Open Repo Link',
     shortcut: 'repo',
     executor: (data) => {
-        const info = data.gitInfo;
-        exec(`open ${info.link}`);
-    }
+        const command = `open ${data.gitInfo.link}`;
+        return exec(command);
+    },
+    getSubTitle: (data) => data.gitInfo.link
 });
-
-OpenRepoLink.getSubTitle = (data) => data.gitInfo.link;
 
 const CreatePullRequest = new ProjectGitAction({
     name: 'Create Pull Request',
@@ -169,7 +168,7 @@ module.exports = [
     openInIDEA,
     OpenInWebStorm,
     openInSourceTree,
-    OpenRepoLink,
+    openRepoLink,
     CreatePullRequest,
     OpenPullRequests,
     OpenConfigFileAction

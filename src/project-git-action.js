@@ -6,7 +6,7 @@ class ProjectGitAction extends ProjectAction {
     }
 
     shouldDisplay(data) {
-        return data.gitInfo !== undefined;
+        return !!data.gitInfo;
     }
 
     getIcon(data) {

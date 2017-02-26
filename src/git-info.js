@@ -1,22 +1,24 @@
-#!/usr/bin/env node
+const exec = require('child_process').exec;
+const fs = require('fs');
+const utils = require('util');
 
-var exec = require('child_process').exec;
-var fs = require('fs');
-var utils = require('util');
-var _ = require('lodash');
+const _ = require('lodash');
 
 /**
  * path
  * callback(error, gitInfo)
  * stashServer
  */
-var gitInfo = function(path, callback, stashServer) {
-    exec('cd ' + path + ' && git config --get remote.origin.url', function(error, stdout, stderr) {
+const gitInfo = function(path, callback, stashServer) {
+    const command = 'cd ' + path + ' && git config --get remote.origin.url'
+    exec(command, function(error, stdout, stderr) {
         if (error || !stdout) {
             callback('git config: not a git repo');
             return;
         }
-        var url = stdout.trim();
+
+        const url = stdout.trim();
+
         // get branch
         gitBranch(function(error, branch) {
             if (error) {
@@ -25,7 +27,7 @@ var gitInfo = function(path, callback, stashServer) {
             }
 
             // get repo info
-            var info = _parseGitUrl(url, branch, stashServer);
+            const info = _parseGitUrl(url, branch, stashServer);
             if (!info) {
                 callback(error);
                 return;
@@ -49,7 +51,7 @@ var gitInfo = function(path, callback, stashServer) {
 /**
  * callback(error, branch)
  */
-var gitBranch = function(callback) {
+const gitBranch = function(callback) {
     exec('git rev-parse --abbrev-ref HEAD', function(error, stdout, stderr) {
         if (error || !stdout) {
             callback('gitBranch: not a git repo');

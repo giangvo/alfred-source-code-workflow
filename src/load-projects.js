@@ -47,6 +47,12 @@ class LoadProjects {
 
             utils.detectProjectInfo(path, (info) => {
                 const { gitInfo, projectType } = info;
+                const arg = {
+                    name,
+                    path,
+                    gitInfo,
+                    projectType
+                };
 
                 this.workflow.addItem(new Item({
                     uid: path,
@@ -57,13 +63,7 @@ class LoadProjects {
                     valid: false,
 
                     // arg is passed to as `selectedData` argument in handler `workflow.onMenuItemSelected(commands.LOAD_PROJECTS)`
-                    arg: JSON.stringify({
-                        name,
-                        path,
-                        link: gitInfo,
-                        projectType,
-                        gitInfo
-                    })
+                    arg: JSON.stringify(arg)
                 }));
             });
         });

@@ -10,6 +10,9 @@ class ProjectAction extends Executor {
 
         this.shortcut = options.shortcut || '';
         this.icon = options.icon || DEFAULT_ICON;
+        if (options.getSubTitle) {
+            this.getSubTitle = options.getSubTitle;
+        }
     }
 
     shouldDisplay(data) {
@@ -21,7 +24,7 @@ class ProjectAction extends Executor {
             const item = new Item({
                 uid: this.name,
                 title: this.name,
-                subtitle: data.path,
+                subtitle: this.getSubTitle(data),
                 icon: 'icons/' + this.icon,
                 hasSubItems: false,
                 valid: true,
@@ -30,7 +33,8 @@ class ProjectAction extends Executor {
                 arg: JSON.stringify({
                     actionName: this.name,
                     actionKey: this.key,
-                    path: data.path
+                    path: data.path,
+                    gitInfo: data.gitInfo
                 })
             });
 
@@ -38,8 +42,17 @@ class ProjectAction extends Executor {
         }
     };
 
+    /**
+     * When creating new instance, consumer can pass a overridden of `getSubTitle` method.
+     * @param data
+     * @returns {*|string}
+     */
+    getSubTitle(data) {
+        return data.path;
+    }
+
     filterKey() {
-        return this.name + (this.shortcut ? ' ' + this.shortcut : '');
+        return `${this.name}${this.shortcut ? ' ' + this.shortcut : ''}`;
     }
 }
 

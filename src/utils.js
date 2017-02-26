@@ -14,6 +14,26 @@ const utils = {
         return folder.filter((file) => fs.statSync(path.join(folderPath, file)).isDirectory());
     },
 
+    /**
+     * Here is example of project info which is returned in callback
+     * projectsInfo: {
+     *      projectType: 'nodejs',
+     *      gitInfo: {
+     *          server: 'bitbucket',
+     *          repo: 'jira-browser-metrics-enhancements',
+     *          project: 'jgeeves',
+     *          branch: 'master',
+     *          url: 'git@bitbucket.org:jgeeves/jira-browser-metrics-enhancements.git',
+     *          link: 'https://bitbucket.org/jgeeves/jira-browser-metrics-enhancements',
+     *          prsLink: 'https://bitbucket.org/jgeeves/jira-browser-metrics-enhancements/pull-requests',
+     *          prLink: 'https://bitbucket.org/jgeeves/jira-browser-metrics-enhancements/pull-requests?query=master',
+     *          createPrLink: 'https://bitbucket.org/jgeeves/jira-browser-metrics-enhancements/pull-requests/new?source=master',
+     *          gitRootPath: '/Users/tthanhdang/src/_tools/alfred-workflows/workflows/alfred-source-code-workflow'
+ *          }
+     * }
+     * @param path
+     * @param callback
+     */
     detectProjectInfo: function(path, callback) {
         const keyCache = 'projectsInfo';
 
