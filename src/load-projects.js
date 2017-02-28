@@ -1,4 +1,4 @@
-const { ICONS, Item, utils: nodeJSUtils } = require('alfred-workflow-nodejs-next');
+const { ICONS, Item, storage, utils: nodeJSUtils } = require('alfred-workflow-nodejs-next');
 
 const config = require('../config.json');
 const sourceFolders = config['source-folders'];
@@ -11,18 +11,31 @@ class LoadProjects {
     }
 
     run(query) {
-        const projects = [];
+        let projects = [];
 
-        sourceFolders.forEach((path) => {
-            const folders = utils.getDirectories(path);
+        // get from cache
+        const keyCache = 'load_projects';
+        const data = storage.get(keyCache);
+        if (data) {
+            console.warn('Load all projects from cache :)');
+            projects = data;
+        } else {
+            console.warn('Load all projects from hard disk! :(');
+            sourceFolders.forEach((path) => {
+                const folders = utils.getDirectories(path);
 
-            folders.forEach((folder) => {
-                projects.push({
-                    name: folder,
-                    path: path + '/' + folder
+                folders.forEach((folder) => {
+                    projects.push({
+                        name: folder,
+                        path: path + '/' + folder
+                    });
                 });
             });
-        });
+
+            // cache in 24h
+            storage.set(keyCache, projects);
+        }
+
 
         if (projects.length === 0) {
             this.workflow.addItem(new Item({

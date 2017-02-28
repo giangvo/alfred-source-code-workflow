@@ -1,10 +1,11 @@
-const { Workflow, Item, ICONS, utils: nodeJSUtils } = require('alfred-workflow-nodejs-next');
+const { Workflow, Item, ICONS, utils: nodeJSUtils, storage, settings } = require('alfred-workflow-nodejs-next');
 const executors = require('./executors.js');
 const utils = require('./utils');
 
 const commands = {
     LOAD_PROJECTS: 'loadProjects',
-    EXECUTE: 'execute'
+    EXECUTE: 'execute',
+    CLEAR_CACHE: 'clear_cache'
 };
 
 const LoadProjects = require('./load-projects');
@@ -43,6 +44,11 @@ const LoadProjectAction = require('./load-project-actions');
     // actionHandler.onAction('config', function(query) {
     //     OpenConfigFileAction.execute();
     // });
+
+    workflow.onAction(commands.CLEAR_CACHE, () => {
+        storage.clear();
+        settings.clear();
+    });
 
     workflow.start();
 })();

@@ -1,5 +1,7 @@
 ## Fearures
-- List all projects in pre-defined source folders
+
+- List all projects in pre-defined source folders which is configured in `source-folders` in `config.json`
+
 - For each project, there are set of actions
     + Open in Finder
     + Open in Sublime text 2
@@ -11,40 +13,34 @@
     + Open project's repo link
     + Open project's pull requests link
     + Open project's create pullrequest link
+    + to be updated...Please create issue to request more features
 - Detect project types
     + Java
     + Nodejs
-    + to be updated...
+    + to be updated...Please create issue to request more features
 - Detect project git info to get repo links
     + Github
     + Bitbutket
     + Stash
 
 ## Installation
-~~1. Download latest node version > 6.x. (https://nodejs.org/dist/v6.2.2/)~~
-~~2. Download worfklow in `wf` folder of this repo~~ 
-~~3. Import workflow~~
 
-### Clone and prepare
-1. Clone this repo.
-2. Open workflow folder in terminal and run `npm install` to install node modules
-3. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.js` and rename it to `config.js`
-
-### Link source code to Alfred workflow folder. (If you find a better way, please suggest us. Thanks)
-1. Open Alfred Preferences --> Workflows tab --> New blank workflow --> Right click to the new created workflow --> Open in Finder.
-2. Copy all files (include generated `node_modules` folder) to the your new created workflow folder. Aternatively, you can create a sympolic link from source code folder to actual workflow folder. 
-
+1. Download latest node version [v7.2.1](https://nodejs.org/dist/v7.2.1/). `.nvmrc` file specifies necessary node version
+2. Download worfklow file in `exported-workflow` folder of this repo.
+3. Import workflow
+4. Open workflow folder in terminal and run `npm install` to install node modules. Make sure you are running in correct node version.
+5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.json` and rename it to `config.json`
+6. Open each workflow steps in Workflows settings, make sure node path is correct. Default node path is `/usr/local/node`. You can use other node path if you want.
 
 ## Usage
 ### Commands
-- `sc`: Search projects
+- `sc`: Search projects, all projects is cached in local for 24h. So when you add new project, you should run `sc_clean_cache` to clear cache.
+- `sc_clean_cache`: to clear cache
 - `scconfig`: Open config file to set source code folders
 
 ### Configs
 - `source-containers`: All sub folders (1 level) in container are loaded at project
-- `sources`: individual project
-- `stash-server`: Stash server domain. e.g: stash.your-compapy.com
-(Optional, config it if you want to detect stash project)
+- `stash-server`: Stash server domain. e.g: stash.your-compapy.com. (Optional, config it if you want to detect stash project)
 
 ### Project actions
 When selecting a project by pressing `tab` or `enter` => a list of project actions will be loaded. List of actions will be different base on project type and git info.

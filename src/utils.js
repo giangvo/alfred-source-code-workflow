@@ -76,11 +76,6 @@ const utils = {
 
     detectGitInfo: function(path, callback) {
         git.gitInfo(path, function(error, info) {
-            if (error) {
-                console.warn('Can not detect git info', error, path);
-                return;
-            }
-
             callback(info);
         }, stashServer);
     },
