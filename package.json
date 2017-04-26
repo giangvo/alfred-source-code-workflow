@@ -2,6 +2,6 @@
     "name": "alfred-source-code-wf",
     "main": "src/main.js",
     "dependencies": {
-        "lodash": "^4.17.4"
+        "alfred-workflow-nodejs-next": "1.0.6"
     }
 }

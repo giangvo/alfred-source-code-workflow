@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const { Item } = require('alfred-workflow-nodejs-next');
 
 const Executor = require('./Executor');

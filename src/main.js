@@ -27,8 +27,8 @@ const LoadProjectAction = require('./load-project-actions');
         loadProjects.run(query);
     });
     // load project's actions
-    workflow.onMenuItemSelected(commands.LOAD_PROJECTS, function(query, selectedTitle, selectedData) {
-        const arg = JSON.parse(selectedData.arg);
+    workflow.onSubActionSelected(commands.LOAD_PROJECTS, function(query, previousSelectedTitle, previousSelectedArg) {
+        const arg = JSON.parse(previousSelectedArg.arg);
         loadProjectAction.run(query, arg);
     });
 

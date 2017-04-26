@@ -2,8 +2,6 @@ const exec = require('child_process').exec;
 const fs = require('fs');
 const utils = require('util');
 
-const _ = require('lodash');
-
 /**
  * path
  * callback(error, gitInfo)
