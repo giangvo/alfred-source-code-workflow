@@ -23,13 +23,12 @@ const LoadProjectAction = require('./load-project-actions');
     });
 
     // load projects list
-    workflow.onAction(commands.LOAD_PROJECTS, function(query) {
+    workflow.onAction(commands.LOAD_PROJECTS, (query) => {
         loadProjects.run(query);
     });
     // load project's actions
-    workflow.onSubActionSelected(commands.LOAD_PROJECTS, function(query, previousSelectedTitle, previousSelectedArg) {
-        const arg = JSON.parse(previousSelectedArg.arg);
-        loadProjectAction.run(query, arg);
+    workflow.onSubActionSelected(commands.LOAD_PROJECTS, (query, previousSelectedTitle, previousSelectedArg) => {
+        loadProjectAction.run(query, previousSelectedArg);
     });
 
     // execute project action
