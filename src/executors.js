@@ -15,7 +15,7 @@ const openInFinderAction = new ProjectAction({
     }
 });
 
-const OpenInItermAction = new ProjectAction({
+const openInItermAction = new ProjectAction({
     name: 'Open in Iterm',
     icon: 'iterm.png',
     executor: (data) => {
@@ -34,7 +34,7 @@ const OpenInItermAction = new ProjectAction({
     }
 });
 
-const OpenInNewItermSplitPanelAction = new ProjectAction({
+const openInNewItermSplitPanelAction = new ProjectAction({
     name: 'Open in Iterm in new split panel',
     icon: 'iterm.png',
     executor: (data) => {
@@ -56,7 +56,7 @@ const OpenInNewItermSplitPanelAction = new ProjectAction({
     }
 });
 
-const OpenInItermCurrentSessionAction = new ProjectAction({
+const openInItermCurrentSessionAction = new ProjectAction({
     name: 'Open in Iterm at current tab',
     icon: 'iterm.png',
     executor: (data) => {
@@ -96,12 +96,21 @@ const openInIDEA = new ProjectAction({
     }
 });
 
-const OpenInWebStorm = new ProjectAction({
+const openInWebStorm = new ProjectAction({
     name: 'Open in WebStorm',
     icon: 'wstorm.icns',
     executor: (data) => exec(`./bin/wstorm ${data.path}`)
 });
 
+const openInVSCode = new ProjectAction({
+    name: 'open_in_vscode',
+    name: 'Open in Visual Studio Code',
+    icon: 'vscode.jpg',
+    executor: (data) => {
+        const command = `/usr/local/bin/code ${data.path}`;
+        return exec(command);
+    }
+});
 
 const openInSourceTree = new ProjectGitAction({
     key: 'open_in_source_tree',
@@ -128,7 +137,7 @@ const openRepoLink = new ProjectGitAction({
     getSubTitle: (data) => data.gitInfo.link
 });
 
-const CreatePullRequest = new ProjectGitAction({
+const createPullRequest = new ProjectGitAction({
     name: 'Create Pull Request',
     shortcut: 'cpr',
     executor: (data) => {
@@ -137,10 +146,10 @@ const CreatePullRequest = new ProjectGitAction({
     }
 });
 
-CreatePullRequest.getSubTitle = (data) => data.gitInfo.createPrLink;
+createPullRequest.getSubTitle = (data) => data.gitInfo.createPrLink;
 
 
-const OpenPullRequests = new ProjectGitAction({
+const openPullRequests = new ProjectGitAction({
     name: 'Open Pull Requests',
     shortcut: 'prs',
     executor: (data) => {
@@ -149,27 +158,28 @@ const OpenPullRequests = new ProjectGitAction({
     }
 });
 
-OpenPullRequests.getSubTitle = (data) => data.gitInfo.prsLink;
+openPullRequests.getSubTitle = (data) => data.gitInfo.prsLink;
 
 // end of git actions
 
 // Open config file action
-const OpenConfigFileAction = new Executor({
+const openConfigFileAction = new Executor({
     name: 'Open Config File',
     executor: (arg) => exec('open config.json')
 });
 
 module.exports = [
     openInFinderAction,
-    OpenInItermAction,
-    OpenInItermCurrentSessionAction,
-    OpenInNewItermSplitPanelAction,
+    openInVSCode,
+    openInItermAction,
+    openInItermCurrentSessionAction,
+    openInNewItermSplitPanelAction,
     openInSublimeAction,
     openInIDEA,
-    OpenInWebStorm,
+    openInWebStorm,
     openInSourceTree,
     openRepoLink,
-    CreatePullRequest,
-    OpenPullRequests,
-    OpenConfigFileAction
+    createPullRequest,
+    openPullRequests,
+    openConfigFileAction
 ];

@@ -4,11 +4,12 @@
 
 - For each project, there are set of actions
     + Open in Finder
-    + Open in Sublime text 2
     + Open in Iterm
     + Open in Iterm (Current session)
     + Open in Iterm (New split panel)
-    + Open Itellij IDEA
+    + Open in Sublime Text editor
+    + Open Intellij IDEA editor
+    + Open Visual Studio Code editor
     + Open in SourceTree
     + Open project's repo link
     + Open project's pull requests link
