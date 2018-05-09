@@ -27,7 +27,7 @@
 ## Installation
 
 1. Download latest node version (v8.9.2+)
-2. Download []worfklow file](wf.alfredworkflow)
+2. Download [worfklow file](wf.alfredworkflow)
 3. Import workflow
 4. Open workflow folder in terminal and run `npm install` to install node modules. Make sure you are running in correct node version.
 5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.json` and rename it to `config.json`
