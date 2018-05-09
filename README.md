@@ -48,7 +48,7 @@
 When selecting a project by pressing `tab` or `enter` => a list of project actions will be loaded. List of actions will be different base on project type and git info.
 
 ## Troubles shooting:
-- `Open in IDEA` does not work: open workflow dir in terminal and run `chmod +7 idea` (set run permission for idea script)
+- `Open in IDEA` does not work: open workflow dir in terminal and run `chmod +x idea` (set run permission for idea script)
 - `Open in Sublime` does not work: Check if "/usr/local/bin/subl" is existed.
 If not, run `ln -s /Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl` to create `subl` command
 
