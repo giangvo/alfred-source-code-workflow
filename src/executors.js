@@ -61,8 +61,8 @@ const openInNewItermSplitPanelAction = new ProjectAction({
 });
 
 const openInItermCurrentSessionAction = new ProjectAction({
-  key: 'open_in_iterm_current_tab',
-  name: 'Open in Iterm (current tab)',
+  key: 'open_in_iterm_current_session',
+  name: 'Open in Iterm (current session)',
   icon: 'iterm.png',
   executor: (data) => {
     const OPEN_IN_ITERM_CURRENT_SESSION_AS =

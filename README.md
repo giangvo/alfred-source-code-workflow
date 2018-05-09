@@ -4,7 +4,7 @@
 
 - For each project, there are set of actions
     + Open in Finder
-    + Open in Iterm
+    + Open in Iterm (New tab)
     + Open in Iterm (Current session)
     + Open in Iterm (New split panel)
     + Open in Sublime Text editor
@@ -40,7 +40,8 @@
 - `scconfig`: Open config file to set source code folders
 
 ### Configs
-- `source-containers`: All sub folders (1 level) in container are loaded at project
+- `source-containers`: All sub folders (first level) in containers are loaded at project
+- `sources`: Individual sources
 - `stash-server`: Stash server domain. e.g: stash.your-compapy.com. (Optional, config it if you want to detect stash project)
 
 ### Project actions

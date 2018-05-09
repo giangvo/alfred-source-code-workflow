@@ -9,8 +9,8 @@ const utils = require('util');
  * stashServer
  */
 const gitInfo = async function (path, stashServer) {
-  const url = await getGitUrl(path);
-  const branch = await gitBranch();
+  const url = await _getGitUrl(path);
+  const branch = await _gitBranch();
 
   const info = _parseGitUrl(url, branch, stashServer);
   if (!info) {
@@ -18,50 +18,38 @@ const gitInfo = async function (path, stashServer) {
   }
 
   // get git root path
-  info.gitRootPath = await gitRootPath();
+  info.gitRootPath = await _gitRootPath();
 
   return info;
 };
 
-const getGitUrl = function (path) {
+async function _getGitUrl (path) {
   const command = 'cd ' + path + ' && git config --get remote.origin.url';
+  return await _exec(command);
+}
+
+async function _gitBranch () {
+  return await _exec('git rev-parse --abbrev-ref HEAD');
+}
+
+async function _gitRootPath () {
+  return await _exec('git rev-parse --show-toplevel');
+}
+
+function _exec(command) {
   return new Promise((resolve, reject) => {
     exec(command, function (error, stdout) {
       if (error || !stdout) {
-        reject('getGitUrl: Not a git repo');
+        reject(`${command}: not a git repo`);
       } else {
         resolve(stdout.trim());
       }
     });
   });
-};
-
-const gitBranch = function () {
-  return new Promise((resolve, reject) => {
-    exec('git rev-parse --abbrev-ref HEAD', function (error, stdout) {
-      if (error || !stdout) {
-        reject('gitBranch: not a git repo');
-      } else {
-        resolve(stdout.trim());
-      }
-    });
-  });
-};
-
-const gitRootPath = function () {
-  return new Promise((resolve, reject) => {
-    exec('git rev-parse --show-toplevel', function (error, stdout) {
-      if (error || !stdout) {
-        reject('gitRootPath: not a git repo');
-      } else {
-        resolve(stdout.trim());
-      }
-    });
-  });
-};
+}
 
 // start of private methods
-const _parseGitUrl = function (url, branch, stashServer) {
+function _parseGitUrl (url, branch, stashServer) {
   let gitConfig = _getBitButketInfo(url, branch);
 
   if (!gitConfig) {
@@ -73,9 +61,9 @@ const _parseGitUrl = function (url, branch, stashServer) {
   }
 
   return gitConfig;
-};
+}
 
-const _getBitButketInfo = function (url, branch) {
+function _getBitButketInfo (url, branch) {
   const BITBUCKET_SSH_URL_PATTERN = /git@bitbucket\.org:(.*)\/(.*)\.git/;
   const BITBUCKET_HTTP_URL_PATTERN = /https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/;
 
@@ -116,7 +104,7 @@ const _getBitButketInfo = function (url, branch) {
   }
 }
 
-const _getGithubInfo = function (url, branch) {
+function _getGithubInfo (url, branch) {
   const GITHUB_HTTP_URL_PATTERN = /https:\/\/github\.com\/(.*)\/(.*)\.git/;
   const GITHUB_GIT_URL_PATTERN = /git@github\.com:(.*)\/(.*)\.git/;
 
@@ -148,9 +136,9 @@ const _getGithubInfo = function (url, branch) {
       createPrLink: utils.format(GITHUB_CREATE_PR_LINK, project, repo, branch)
     }
   }
-};
+}
 
-const _getStashInfo = function (url, branch, stashServer) {
+function _getStashInfo (url, branch, stashServer) {
 
   const STASH_SSH_URL_PATTERN = new RegExp("ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
   const STASH_HTTP_URL_PATTERN = new RegExp("https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
@@ -189,7 +177,7 @@ const _getStashInfo = function (url, branch, stashServer) {
       createPrLink: utils.format(STASH_CREATE_PR_LINK, project, repo, branch)
     }
   }
-};
+}
 
 function _quote (str) {
   return str.replace(/(?=[/\\^$*+?.()|{}[\]])/g, "\\");
@@ -199,6 +187,5 @@ function _quote (str) {
  * Exports
  */
 module.exports = {
-  gitInfo: gitInfo,
-  gitBranch: gitBranch,
+  gitInfo: gitInfo
 };

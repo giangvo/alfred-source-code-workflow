@@ -1,7 +1,9 @@
 {
-    "source-folders": [
-        "/Users/user_xxx/src"
-    ],
-
-    "stash-server": "stash.atlassian.com"
+  "source-containers": [
+    "/Users/user_xxx/src"
+  ],
+  "sources": {
+    "my-single-project": "the-path-of-my-single-project"
+  },
+  "stash-server": "stash.atlassian.com"
 }
