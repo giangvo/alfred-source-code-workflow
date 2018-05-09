@@ -8,72 +8,61 @@ const utils = require('util');
  * callback(error, gitInfo)
  * stashServer
  */
-const gitInfo = function (path, callback, stashServer) {
+const gitInfo = async function (path, stashServer) {
+  const url = await getGitUrl(path);
+  const branch = await gitBranch();
+
+  const info = _parseGitUrl(url, branch, stashServer);
+  if (!info) {
+    throw new Error('Fail to detect git info');
+  }
+
+  // get git root path
+  info.gitRootPath = await gitRootPath();
+
+  return info;
+};
+
+const getGitUrl = function (path) {
   const command = 'cd ' + path + ' && git config --get remote.origin.url';
-  exec(command, function (error, stdout) {
-    if (error || !stdout) {
-      callback('git config: not a git repo');
-      return;
-    }
-
-    const url = stdout.trim();
-
-    // get branch
-    gitBranch(function (error, branch) {
-      if (error) {
-        callback(error);
-        return;
+  return new Promise((resolve, reject) => {
+    exec(command, function (error, stdout) {
+      if (error || !stdout) {
+        reject('getGitUrl: Not a git repo');
+      } else {
+        resolve(stdout.trim());
       }
-
-      // get repo info
-      const info = _parseGitUrl(url, branch, stashServer);
-      if (!info) {
-        callback(error);
-        return;
-      }
-
-      // get git root path
-      gitRootPath(function (error, gitRootPath) {
-        if (error) {
-          callback(error);
-          return;
-        }
-        info.gitRootPath = gitRootPath;
-        callback(undefined, info);
-      })
-    })
+    });
   });
 };
 
-/**
- * callback(error, branch)
- */
-const gitBranch = function (callback) {
-  exec('git rev-parse --abbrev-ref HEAD', function (error, stdout, stderr) {
-    if (error || !stdout) {
-      callback('gitBranch: not a git repo');
-      return;
-    }
-    callback(undefined, stdout.trim());
+const gitBranch = function () {
+  return new Promise((resolve, reject) => {
+    exec('git rev-parse --abbrev-ref HEAD', function (error, stdout) {
+      if (error || !stdout) {
+        reject('gitBranch: not a git repo');
+      } else {
+        resolve(stdout.trim());
+      }
+    });
   });
-}
+};
 
-/**
- * callback(error, branch)
- */
-var gitRootPath = function (callback) {
-  exec('git rev-parse --show-toplevel', function (error, stdout, stderr) {
-    if (error || !stdout) {
-      callback('gitRootPath: not a git repo');
-      return;
-    }
-    callback(undefined, stdout.trim());
+const gitRootPath = function () {
+  return new Promise((resolve, reject) => {
+    exec('git rev-parse --show-toplevel', function (error, stdout) {
+      if (error || !stdout) {
+        reject('gitRootPath: not a git repo');
+      } else {
+        resolve(stdout.trim());
+      }
+    });
   });
-}
+};
 
 // start of private methods
-var _parseGitUrl = function (url, branch, stashServer) {
-  var gitConfig = _getBitButketInfo(url, branch);
+const _parseGitUrl = function (url, branch, stashServer) {
+  let gitConfig = _getBitButketInfo(url, branch);
 
   if (!gitConfig) {
     gitConfig = _getGithubInfo(url, branch);
@@ -84,20 +73,20 @@ var _parseGitUrl = function (url, branch, stashServer) {
   }
 
   return gitConfig;
-}
+};
 
-var _getBitButketInfo = function (url, branch) {
-  var BITBUCKET_SSH_URL_PATTERN = /git@bitbucket\.org:(.*)\/(.*)\.git/
-  var BITBUCKET_HTTP_URL_PATTERN = /https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/
+const _getBitButketInfo = function (url, branch) {
+  const BITBUCKET_SSH_URL_PATTERN = /git@bitbucket\.org:(.*)\/(.*)\.git/;
+  const BITBUCKET_HTTP_URL_PATTERN = /https:\/\/(.*)@bitbucket\.org\/(.*)\/(.*).git/;
 
-  var BITBUCKET_REPO_LINK = 'https://bitbucket.org/%s/%s'
-  var BITBUCKET_REPO_PRS_LINK = 'https://bitbucket.org/%s/%s/pull-requests'
-  var BITBUCKET_BRANCH_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests?query=%s'
-  var BITBUCKET_CREATE_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests/new?source=%s'
+  const BITBUCKET_REPO_LINK = 'https://bitbucket.org/%s/%s';
+  const BITBUCKET_REPO_PRS_LINK = 'https://bitbucket.org/%s/%s/pull-requests';
+  const BITBUCKET_BRANCH_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests?query=%s';
+  const BITBUCKET_CREATE_PR_LINK = 'https://bitbucket.org/%s/%s/pull-requests/new?source=%s';
 
-  var project, repo;
+  let project, repo;
 
-  var result = url.match(BITBUCKET_SSH_URL_PATTERN);
+  let result = url.match(BITBUCKET_SSH_URL_PATTERN);
   if (result) {
     project = result[1];
     repo = result[2];
@@ -127,18 +116,18 @@ var _getBitButketInfo = function (url, branch) {
   }
 }
 
-var _getGithubInfo = function (url, branch) {
-  var GITHUB_HTTP_URL_PATTERN = /https:\/\/github\.com\/(.*)\/(.*)\.git/
-  var GITHUB_GIT_URL_PATTERN = /git@github\.com:(.*)\/(.*)\.git/
+const _getGithubInfo = function (url, branch) {
+  const GITHUB_HTTP_URL_PATTERN = /https:\/\/github\.com\/(.*)\/(.*)\.git/;
+  const GITHUB_GIT_URL_PATTERN = /git@github\.com:(.*)\/(.*)\.git/;
 
-  var GITHUB_REPO_LINK = 'https://github.com/%s/%s'
-  var GITHUB_REPO_PRS_LINK = 'https://github.com/%s/%s/pulls'
-  var GITHUB_BRANCH_PR_LINK = 'https://github.com/%s/%s/pulls?q='
-  var GITHUB_CREATE_PR_LINK = 'https://github.com/%s/%s/compare/%s...master'
+  const GITHUB_REPO_LINK = 'https://github.com/%s/%s';
+  const GITHUB_REPO_PRS_LINK = 'https://github.com/%s/%s/pulls';
+  const GITHUB_BRANCH_PR_LINK = 'https://github.com/%s/%s/pulls?q=';
+  const GITHUB_CREATE_PR_LINK = 'https://github.com/%s/%s/compare/%s...master';
 
-  var project, repo;
+  let project, repo;
 
-  var result = url.match(GITHUB_HTTP_URL_PATTERN);
+  let result = url.match(GITHUB_HTTP_URL_PATTERN);
   if (!result) {
     result = url.match(GITHUB_GIT_URL_PATTERN);
   }
@@ -159,20 +148,20 @@ var _getGithubInfo = function (url, branch) {
       createPrLink: utils.format(GITHUB_CREATE_PR_LINK, project, repo, branch)
     }
   }
-}
+};
 
-var _getStashInfo = function (url, branch, stashServer) {
+const _getStashInfo = function (url, branch, stashServer) {
 
-  var STASH_SSH_URL_PATTERN = new RegExp("ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
-  var STASH_HTTP_URL_PATTERN = new RegExp("https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
+  const STASH_SSH_URL_PATTERN = new RegExp("ssh:\\/\\/git@" + _quote(stashServer) + ":[\\d]*\\/(.*)\\/(.*)\\.git");
+  const STASH_HTTP_URL_PATTERN = new RegExp("https:\\/\\/(.*)@" + _quote(stashServer) + "\\/scm\\/(.*)/(.*).git");
 
-  var STASH_REPO_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/browse'
-  var STASH_REPO_PRS_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests'
-  var STASH_CREATE_PR_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests?create&sourceBranch=%s'
+  const STASH_REPO_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/browse';
+  const STASH_REPO_PRS_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests';
+  const STASH_CREATE_PR_LINK = 'https://' + stashServer + '/projects/%s/repos/%s/pull-requests?create&sourceBranch=%s';
 
-  var project, repo;
+  let project, repo;
 
-  var result = url.match(STASH_SSH_URL_PATTERN);
+  let result = url.match(STASH_SSH_URL_PATTERN);
   if (result) {
     project = result[1];
     repo = result[2];
@@ -200,10 +189,10 @@ var _getStashInfo = function (url, branch, stashServer) {
       createPrLink: utils.format(STASH_CREATE_PR_LINK, project, repo, branch)
     }
   }
-}
+};
 
 function _quote (str) {
-  return str.replace(/(?=[\/\\^$*+?.()|{}[\]])/g, "\\");
+  return str.replace(/(?=[/\\^$*+?.()|{}[\]])/g, "\\");
 }
 
 /**
@@ -212,10 +201,4 @@ function _quote (str) {
 module.exports = {
   gitInfo: gitInfo,
   gitBranch: gitBranch,
-  // for testing
-  test: {
-    _getBitButketInfo: _getBitButketInfo,
-    _getGithubInfo: _getGithubInfo,
-    _getStashInfo: _getStashInfo
-  }
-}
+};

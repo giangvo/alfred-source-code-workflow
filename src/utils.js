@@ -17,7 +17,7 @@ const utils = {
 
   /**
    * Build project info from list of paths. Return list of project info
-   * Here is example of project info which is returned in callback
+   * Here is example of project info
    * projectsInfo: {
    *      projectType: 'nodejs',
    *      gitInfo: {
@@ -86,15 +86,11 @@ const utils = {
   },
 
   detectGitInfo: async function (path) {
-    return new Promise((resolve) => {
-      git.gitInfo(path, function (error, info) {
-        if (error) {
-          resolve();
-        } else {
-          resolve(info);
-        }
-      }, stashServer);
-    });
+    try {
+      return await git.gitInfo(path, stashServer);
+    } catch (err) {
+      console.error(err);
+    }
   },
 
   /**
