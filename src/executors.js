@@ -3,7 +3,6 @@
 const exec = require('child_process').exec;
 const {utils} = require('alfred-workflow-nodejs-next');
 
-const Executor = require('./Executor');
 const ProjectAction = require('./ProjectAction');
 const ProjectGitAction = require('./project-git-action');
 
@@ -168,12 +167,6 @@ openPullRequests.getSubTitle = (data) => data.gitInfo.prsLink;
 
 // end of git actions
 
-// Open config file action
-const openConfigFileAction = new Executor({
-  name: 'Open Config File',
-  executor: () => exec('open config.json')
-});
-
 module.exports = [
   openInFinderAction,
   openInVSCode,
@@ -186,6 +179,5 @@ module.exports = [
   openInSourceTree,
   openRepoLink,
   createPullRequest,
-  openPullRequests,
-  openConfigFileAction
+  openPullRequests
 ];

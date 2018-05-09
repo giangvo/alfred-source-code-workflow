@@ -1,12 +1,14 @@
 'use strict';
 
-const {Workflow, storage, settings} = require('alfred-workflow-nodejs-next');
-const executors = require('./executors.js');
+const {Workflow, storage} = require('alfred-workflow-nodejs-next');
+const executors = require('./executors');
+const utils = require('./utils');
 
 const commands = {
   LOAD_PROJECTS: 'loadProjects',
   EXECUTE: 'execute',
-  CLEAR_CACHE: 'clear_cache'
+  CLEAR_CACHE: 'clear_cache',
+  EDIT_CONFIG: 'edit_config'
 };
 
 const LoadProjects = require('./load-projects');
@@ -35,19 +37,19 @@ const LoadProjectAction = require('./load-project-actions');
   // execute project action
   workflow.onAction(commands.EXECUTE, function (arg) {
     // Handle project actions
-    executors.forEach((executor) => {
+    Object.values(executors).forEach((executor) => {
       executor.execute(arg);
     });
   });
 
   // open config file
-  // actionHandler.onAction('config', function(query) {
-  //     OpenConfigFileAction.execute();
-  // });
+  workflow.onAction(commands.EDIT_CONFIG, function () {
+    utils.exec('open config.json');
+  });
 
+  // clear cache
   workflow.onAction(commands.CLEAR_CACHE, () => {
     storage.clear();
-    settings.clear();
   });
 
   workflow.start();

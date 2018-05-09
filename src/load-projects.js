@@ -69,7 +69,6 @@ class LoadProjects {
       return;
     }
 
-    console.warn(projects.length);
     const filteredProjects = nodeJSUtils.filter(query, projects, (item) => {
       return item.name.toLowerCase() + ' ' + item.name.toLowerCase().replace(/-/g, ' ');
     });

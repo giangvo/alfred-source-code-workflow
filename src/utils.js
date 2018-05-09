@@ -1,5 +1,6 @@
 'use strict';
 
+const exec = require('child_process').exec;
 const fs = require('fs');
 const path = require('path');
 const {storage} = require('alfred-workflow-nodejs-next');
@@ -89,7 +90,7 @@ const utils = {
     try {
       return await git.gitInfo(path, stashServer);
     } catch (err) {
-      console.error(err);
+      console.warn(err);
     }
   },
 
@@ -106,6 +107,21 @@ const utils = {
       return false;
     }
   },
+
+  /**
+   * Execute a command
+   */
+  exec: function (command) {
+    return new Promise((resolve, reject) => {
+      exec(command, function (error, stdout) {
+        if (error || !stdout) {
+          reject(`Error running command: ${command}`);
+        } else {
+          resolve(stdout.trim());
+        }
+      });
+    });
+  }
 };
 
 module.exports = utils;
