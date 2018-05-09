@@ -1,6 +1,6 @@
 ## Fearures
 
-- List all projects in pre-defined source folders which is configured in `source-folders` in `config.json`
+- List all projects in pre-defined source folders which is configured in `source-folders` and `sources` in `config.json`
 
 - For each project, there are set of actions
     + Open in Finder
@@ -31,12 +31,12 @@
 3. Import workflow
 4. Open workflow folder in terminal and run `npm install` to install node modules. Make sure you are running in correct node version.
 5. Make sure there is a config file - `config.js` in root folder of workflow. If it is not existed, please clone the file `config.sample.json` and rename it to `config.json`
-6. Open each workflow steps in Workflows settings, make sure node path is correct. Default node path is `/usr/local/node`. You can use other node path if you want.
+6. Open the workflow settings, make sure NODE_PATH environment variable is correct. Default node path is `/usr/local/bin/node`.
 
 ## Usage
 ### Commands
-- `sc`: Search projects, all projects is cached in local for 24h. So when you add new project, you should run `sc_clean_cache` to clear cache.
-- `sc_clean_cache`: to clear cache
+- `sc`: Search projects, all projects is cached in local for 24h. So when you add new project, you should run `sccleancache` to clear cache.
+- `scclearcache`: to clear cache
 - `scconfig`: Open config file to set source code folders
 
 ### Configs
